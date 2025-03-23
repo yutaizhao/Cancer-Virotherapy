@@ -1,87 +1,107 @@
 rm(list=ls())
 
-###################################################################
-###################################################################
-## Projet
-###################################################################
-###################################################################
+# Read CSV data
+data.df <- read.csv("plot-data.csv", header=TRUE)
+
+TimeData <- data.df$x
+TumorData <- data.df$y
+TimeSim <- TimeData
+
+# Model (Updated version with alpha * delta * x term)
+library(deSolve)
 
 Viro.model <- function(t, pop, param) {
+  y <- pop[1]  # Uninfected tumor cells
+  x <- pop[2]  # Infected tumor cells
+  v <- pop[3]  # Virus particles
   
-  y <- pop[1]  # Uninfected Tumors
-  x <- pop[2]  # Infected Tumors
-  v <- pop[3]  # Virus
+  K     <- param[1]
+  r     <- param[2]
+  delta <- param[3]
+  rho   <- param[4]
+  k     <- param[5]
+  a     <- param[6]
+  w     <- param[7]
+  eps   <- param[8]
+  alpha <- param[9]
   
-  K=param[1] #Carrying capacity of tumors (in 10 ^6 cells)
-  r=param[2] #Effective growth rate of uninfected cells (day-1)
-  delta=param[3] #Effective death rate constant of infected cells (day-1)
+  dy <- r * y * (1 - ((y + x)^eps / K^eps)) - k * y * v - rho * x * y
+  dx <- k * y * v - delta * x + rho * x * y
+  dv <- a * x - w * v - k * y * v + alpha * delta * x
   
-  rho=param[4] #Rate constant of cell fusion (per day per 10^6 cells)
-  k=param[5] #Infection rate constant (per day per 106 cells or virions) of uninfected cells by free virus v(t)
-  a=param[6] #Virus production rate constant by infected cells (virions per day per cell)
-  w=param[7] #Rate constant of virus elimination (day-1)
-  
-  eps=param[8]
-  alpha= param[9] #release on cell death
-  
-  #x,y,v the results 
-  dy <- r*y*(1-((y+x)^eps/K^eps))-k*y*v-rho*x*y
-  dx <- k*y*v - delta*x + rho*x*y
-  dv <- a*x - w*v - k*y*v + alpha*delta*x
-  
-
-  
-  res<-c(dy, dx, dv)
-  
-  list(res)
+  list(c(dy, dx, dv))
 }
 
-##############################
-### main = execution du modele
-##############################
+event.dat <- data.frame(
+  var   = c("v"),
+  time  = 14,
+  value = 2,
+  method= "replace"
+)
 
 
-require(deSolve)
+K_fixed   <- 2139.258
+r_fixed   <- 0.2062134
+eps_fixed <- 1.648773
 
-Tmax = 45
-dt = 1
+Init.cond <- c(y=TumorData[1], x=0, v=0)
 
-y0=0
-x0=0
-v0=0
+# par = (delta, rho, k, a, w, alpha)
+sse_func <- function(par) {
   
-#Fitted param
-K=  2139.258#Carrying capacity of tumors (in 10 ^6 cells)
-r=  0.2062134 #Effective growth rate of uninfected cells (day-1)
-eps= 1.648773
-#Estimated param
-delta= 1.119#Effective death rate constant of infected cells (day-1)
-rho= 0.141#Rate constant of cell fusion (per day per 10^6 cells)
-k= 0.000591 #Infection rate constant (per day per 106 cells or virions) of uninfected cells by free virus v(t)
-a= 0.9 #Virus production rate constant by infected cells (virions per day per cell)
-w= 0.3 #Rate constant of virus elimination (day-1)
-alpha=0.5
+  delta_ <- par[1]
+  rho_   <- par[2]
+  k_     <- par[3]
+  a_     <- par[4]
+  w_     <- par[5]
+  alpha_ <- par[6]
+  
+  param_vec <- c(K_fixed, r_fixed, delta_, rho_, k_, a_, w_, eps_fixed, alpha_)
+  
+  out <- lsoda(Init.cond, TimeSim, Viro.model, param_vec,
+               events = list(data=event.dat))
+  
+  model_tumor <- out[, 'y'] + out[, 'x']
+  
+  diff_ <- TumorData - model_tumor
+  
+  sse_val <- sum(diff_^2, na.rm=TRUE)
+  
+  return(sse_val)
+}
 
-event.dat <- data.frame(var   = c("y", "v"),
-                        time  = 15,
-                        value = c(126.237, 2),
-                        method = "replace")
+# Parameter estimation (now includes alpha)
 
-Time=seq(from=0,to=Tmax,by=dt)
+init_par <- c(delta=1.119, rho=0.141, k=0.000591, a=0.9, w=0.3, alpha=0.5)
 
-Init.cond <- c(y = y0, x = x0, v = v0)
-param=c(K,r,delta,rho,k,a,w,eps,alpha)
+lower_bounds <- c(0, 1e-10, 1e-6, 0, 0, 0)
+upper_bounds <- c(5, 1, 1, 10, 20, 10)
 
-# Execute
-result <- lsoda(Init.cond, Time, Viro.model, param, events = list(data = event.dat))
-result
+fit <- optim(
+  par   = init_par,
+  fn    = sse_func,
+  method= "L-BFGS-B",
+  lower = lower_bounds,
+  upper = upper_bounds
+)
 
-colnames(result) <- c("Time", "y", "x", "v")
+# Extract best-fit parameters
+best_par <- fit$par
+best_par
 
-head(result)
+# Simulate model with best-fit parameters
+param_best <- c(K_fixed, r_fixed, best_par["delta"], best_par["rho"],
+                best_par["k"], best_par["a"], best_par["w"],
+                eps_fixed, best_par["alpha"])
 
-plot(Time,result[,"y"],type="l",col="green",xlab="Time",ylab="",ylim=c(0,K),bty="n")
-lines(Time,result[,"x"],type="l",col="red")
-lines(Time,result[,"v"],type="l",col="black")
-legend("topright",c("Uninfected","Infected","Virus"),col=c("green","red","black"),lty=1,bty="n")
+out_best <- lsoda(Init.cond, TimeSim, Viro.model, param_best,
+                  events = list(data=event.dat))
 
+out_best_df <- as.data.frame(out_best)
+out_best_df$tumor <- out_best_df$y + out_best_df$x
+
+plot(TimeData, TumorData, pch=16, col="blue",
+     xlab="Temps (jour)", ylab="Taille Tumeur (x+y)", bty="n")
+lines(out_best_df$time, out_best_df$tumor, col="red", lwd=2)
+legend("topright", legend=c("Données", "Modèle"),
+       col=c("blue","red"), pch=c(16,NA), lty=c(0,1), bty="n")

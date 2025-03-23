@@ -3,7 +3,7 @@ rm(list=ls())
 ##############################################################################
 # Read CSV data
 ##############################################################################
-data.df <- read.csv("plot-data.csv", header=TRUE)
+data.df <- read.csv("virotherapy-data.csv", header=TRUE)
 
 TimeData <- data.df$x
 TumorData <- data.df$y
@@ -36,10 +36,10 @@ Viro.model <- function(t, pop, param) {
 }
 
 event.dat <- data.frame(
-  var   = c("y", "v"),   # Quelles variables sont affectées
-  time  = 14,            # Moment de l'événement
-  value = c(126.237, 2), # Nouvelles valeurs
-  method= "replace"      # Remplacer la valeur
+  var   = c("v"),      # Only change virus
+  time  = 14,          # Time of event
+  value = 2,           # Inject virus
+  method= "replace"     
 )
 
 ##############################################################################
@@ -52,7 +52,7 @@ r_fixed   <- 0.2062134
 eps_fixed <- 1.648773
 
 # Initial conditions
-Init.cond <- c(y=0, x=0, v=0)
+Init.cond <- c(y=TumorData[1], x=0, v=0)
 
 # par = (delta, rho, k, a, w)
 sse_func <- function(par) {
@@ -76,10 +76,9 @@ sse_func <- function(par) {
   return(sse_val)
 }
 
-##############################################################################
-# Optimisation des paramètres inconnus (delta, rho, k, a, w)
-# On utilise la fonction optim (méthode L-BFGS-B) pour imposer des bornes.
-##############################################################################
+
+# Estimation des paramètres inconnus (delta, rho, k, a, w)
+
 
 # possible init values for parameters pour le vecteur par
 init_par <- c(delta=1.119, rho=0.141, k=0.000591, a=0.9, w=0.3)
@@ -89,8 +88,8 @@ fit <- optim(
   par   = init_par,
   fn    = sse_func,
   method= "L-BFGS-B",
-  lower = c(1e-20, 1e-20, 1e-20, 1e-20, 1e-20),  # lower bound
-  upper = c(100,    10,    10,    100,   100)   # upper bound
+  lower = c(0, 1e-10, 1e-6, 0, 0),  # lower bound
+  upper = c(5,    1,    1,    10,   20)   # upper bound
 )
 
 # Get parameters
