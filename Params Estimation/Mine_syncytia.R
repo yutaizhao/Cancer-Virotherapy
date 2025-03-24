@@ -41,7 +41,7 @@ Viro.model <- function(t, pop, param) {
   
   dx <- k_inf*y*v  - delta*x - rho* x * y
   
-  ds <- rho*x*y - gamma*s
+  ds <- 2*rho*x*y - gamma*s
   
   dv <- a*x - w*v - k_inf*y*v + l*gamma*s
   
