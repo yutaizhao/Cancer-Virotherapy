@@ -65,7 +65,7 @@ MyViro.model <- function(t, pop, param) {
   
   dx <- k*y*v  - delta*x - rho* x * y
   
-  ds <- rho*x*y - gamma*s
+  ds <- 2*rho*x*y - gamma*s
   
   dv <- a*x - w*v - k*y*v + l*gamma*s
   
