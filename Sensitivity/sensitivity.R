@@ -98,30 +98,30 @@ eval_func_MyViro <- function(X) {
 }
 
 set.seed(123)
-n <- 1000
+n <- 10000
 
 X1_Viro <- data.frame(
   K     = runif(n, 1000, 3000),
-  r     = runif(n, 0.1, 1),
-  delta = runif(n, 0.05, 0.5),
-  rho   = runif(n, 0.0001, 0.01),
-  k     = runif(n, 0.0001, 0.01),
-  a     = runif(n, 1, 100),
-  w     = runif(n, 0.1, 1),
-  eps   = runif(n, 0.5, 2)
+  r     = runif(n, 0.01, 1),
+  delta = runif(n, 0.01, 2),
+  rho   = runif(n, 0.01, 1),
+  k     = runif(n, 0.00001, 0.01),
+  a     = runif(n, 0, 1),
+  w     = runif(n, 0, 1),
+  eps   = runif(n, 0.1, 10)
 )
 
 X1_MyViro <- data.frame(
   K     = runif(n, 1000, 3000),
-  r     = runif(n, 0.1, 1),
-  delta = runif(n, 0.05, 0.5),
-  rho   = runif(n, 0.0001, 0.01),
-  k     = runif(n, 0.0001, 0.01),
-  a     = runif(n, 1, 100),
-  w     = runif(n, 0.1, 1),
-  eps   = runif(n, 0.5, 2),
-  gam = runif(n, 0.01, 0.1),
-  l     = runif(n, 0.1, 10)
+  r     = runif(n, 0.01, 1),
+  delta = runif(n, 0.01, 2),
+  rho   = runif(n, 0.01, 1),
+  k     = runif(n, 0.00001, 0.01),
+  a     = runif(n, 0, 1),
+  w     = runif(n, 0, 1),
+  eps   = runif(n, 0.1, 10),
+  gam   = runif(n, 0.05, 1),
+  l     = runif(n, 0, 1)
 )
 
 y_Viro <- eval_func_Viro(X1_Viro)
@@ -136,3 +136,4 @@ res_prcc_MyViro <- pcc(X1_MyViro, y_MyViro, nboot = 100, rank = TRUE)
 print(res_prcc_MyViro)
 plot(res_prcc_MyViro)
 abline(h = 0, col = "grey")
+
