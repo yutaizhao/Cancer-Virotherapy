@@ -3,28 +3,25 @@ rm(list=ls())
 # Read CSV data
 data.df <- read.csv("../Data/tumor-data.csv", header=TRUE)
 
-TimeData <- data.df$x    # Time points from the data
-TumorData <- data.df$y   # Measured tumor sizes (y)
-TimeSim <- TimeData      # Use the same time points for simulation
+TimeData <- data.df$x
+TumorData <- data.df$y
+TimeSim <- TimeData
 
 # Tumor growth model
 # y' = (g / epsilon) * y * [1 - (y / K)^epsilon]
 library(deSolve)
 
 TumorGrowth.model <- function(t, pop, param) {
-  y <- pop[1]  # Tumor size at time t
+  y <- pop[1]
   
-  g     <- param[1]   # Growth rate
-  eps   <- param[2]   #
-  K     <- param[3]   # Carrying capacity
+  g     <- param[1]
+  eps   <- param[2]
+  K     <- param[3]
   
   dy <- (g / eps) * y * (1 - (y / K)^eps)
   
   list( dy )
 }
-
-# Cost function - SSE (Sum of Squared Errors)
-# Parameters to estimate: g, epsilon, K
 
 sse_func <- function(par) {
   
@@ -50,13 +47,12 @@ sse_func <- function(par) {
 # Initial guesses for the parameters to be estimated
 init_par <- c(g = 0.5, eps = 1, K = 2000)
 
-# parameters estimation using 'optim'
 fit <- optim(
   par   = init_par,
   fn    = sse_func,
   method= "L-BFGS-B",
-  lower = c(1e-5, 1e-5, 1),  # lower bound
-  upper =  c(10, 10, 10000)   # upper bound
+  lower = c(1e-5, 1e-5, 1),
+  upper =  c(10, 10, 10000)
 )
 
 # Results

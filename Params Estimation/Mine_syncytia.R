@@ -10,7 +10,7 @@ TimeData <- data.df$x
 TumorData <- data.df$y
 TimeSim <- TimeData
 
-K_fixed   <- 2139.258  # carrying capacity (fixed)
+K_fixed   <- 2139.258
 eps_fixed <- 1.648773
 
 ##############################################################################
@@ -25,7 +25,7 @@ Viro.model <- function(t, pop, param) {
 
   # fixed param
   K <- K_fixed
-  eps   <- eps_fixed  # logistic exponent
+  eps   <- eps_fixed
   
 
   # parameters to estimate

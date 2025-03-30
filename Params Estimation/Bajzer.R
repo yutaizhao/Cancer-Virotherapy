@@ -78,9 +78,6 @@ sse_func <- function(par) {
 
 
 # Estimation des paramètres inconnus (delta, rho, k, a, w)
-
-
-# possible init values for parameters pour le vecteur par
 init_par <- c(delta=1.119, rho=0.141, k=0.000591, a=0.9, w=0.3)
 
 # parameters estimation using 'optim'

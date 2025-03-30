@@ -58,7 +58,7 @@ MyViro.model <- function(t, pop, param) {
   a     <- param[6]
   w     <- param[7]
   eps   <- param[8]
-  gamma <- param[9]
+  gamma <- param[9]  # death of syncytia
   l    <- param[10]  # release of virus
   
   dy <- r * y * (1 - ((y + x + s)^eps / K^eps)) - rho* x * y -k*y*v
@@ -75,9 +75,8 @@ MyViro.model <- function(t, pop, param) {
 }
 
 ##############################
-### main = execution du modele
+### main
 ##############################
-
 
 require(deSolve)
 
@@ -110,19 +109,15 @@ colnames(result) <- c("Time", "y", "x", "v")
 colnames(result_mymodel) <- c("Time", "y", "x", "s", "v")
 
 ##############################################################################
-# Plot all together
+# Plot
 ##############################################################################
 plot(TimeData, TumorData, pch=16, col="blue",
      xlab="Time (days)", ylab="Tumor size (mm^3)", bty="n",
      xlim = c(0, Tmax),ylim=c(0, 2139.258))
 
-# Model 1 (green)
 lines(result[,"Time"], result[,"y"] + result[,"x"], col="green", lwd=2)
-
-# Model 2 (red)
 lines(result_mymodel[,"Time"], result_mymodel[,"y"] + result_mymodel[,"x"] + result_mymodel[,"s"], col="red", lwd=2, lty=2)
 
-# Legend
 legend("topleft", legend=c("Experimental data", "Bajzer Model", "MyModel"),
        col=c("blue", "green", "red"),
        pch=c(16, NA, NA), lty=c(NA, 1, 2), lwd=c(NA, 2, 2), bty="n")
