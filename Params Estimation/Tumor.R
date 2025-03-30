@@ -1,7 +1,7 @@
 rm(list=ls())
 
 # Read CSV data
-data.df <- read.csv("tumor-data.csv", header=TRUE)
+data.df <- read.csv("../Data/tumor-data.csv", header=TRUE)
 
 TimeData <- data.df$x    # Time points from the data
 TumorData <- data.df$y   # Measured tumor sizes (y)
@@ -75,6 +75,6 @@ plot(TimeData, TumorData, pch=16, col="blue",
      xlab="Time (days)", ylab="Tumor Size", bty="n")
 lines(out_best_df$time, out_best_df$y, col="red", lwd=2)
 
-legend("topright", legend=c("Observed data", "Fitted model"),
+legend("topleft", legend=c("Observed data", "Fit BR model"),
        col=c("blue","red"), pch=c(16,NA), lty=c(0,1), bty="n")
 
