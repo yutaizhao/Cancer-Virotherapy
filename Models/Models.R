@@ -100,7 +100,7 @@ Time=seq(from=TimeData[1],to=Tmax,by=dt)
 Init.cond <- c(y = y0, x = x0, v = v0)
 param=c(2139.258,0.2062134,1.119, 0.141, 0.000591, 0.9, 0.3 ,1.648773)
 Init_mymodel.cond <- c(y = y0, x = x0,  s = s0, v = v0)
-param_mymodel=c(2139.258, 0.2465703,0.6790797, 0.0869327, 0.3876686, 4.2512462,  0.1503796, 1.648773, 1.0000000, 0.4578726)
+param_mymodel=c(2139.258, 0.1820776, 1.0143859, 0.2220311, 0.0001,  0.8996148,  0.2717003, 1.648773, 1.0338861, 0.1848987)
 
 # Execute
 result <- lsoda(Init.cond, Time, Viro.model, param, events = list(data = event.dat))
