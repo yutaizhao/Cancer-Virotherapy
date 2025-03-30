@@ -11,6 +11,7 @@ TumorData <- data.df$y
 TimeSim <- TimeData
 
 K_fixed   <- 2139.258  # carrying capacity (fixed)
+eps_fixed <- 1.648773
 
 ##############################################################################
 # Virotherapy Model with r and eps as parameters to estimate
@@ -24,17 +25,19 @@ Viro.model <- function(t, pop, param) {
 
   # fixed param
   K <- K_fixed
+  eps   <- eps_fixed  # logistic exponent
+  
 
   # parameters to estimate
   r     <- param[1]  # growth rate
-  eps   <- param[2]  # logistic exponent
+  w     <- param[2]  # virus elimination
   rho   <- param[3]  # infected+uninfected => syncytia
   l     <- param[4]  # release of virus
   k_inf <- param[5]  # infection consumption (y, v)
   delta <- param[6]  # infected death
   gamma <- param[7]  # syncytia death
   a     <- param[8]  # virus production
-  w     <- param[9]  # virus elimination
+ 
 
   # uninfected logistic
   dy <- r * y * (1 - ((y + x + s)^eps / K^eps)) - rho * x * y - k_inf * y * v
@@ -71,7 +74,7 @@ sse_func <- function(par) {
   model_tumor <- out[,"y"] + out[,"x"] + out[,"s"]
   model_tumor_data <- model_tumor[TimeSim %in% TimeData]
 
-  SSE <- sum((log1p(TumorData) - log1p(model_tumor_data))^2, na.rm=TRUE)
+  SSE <- sum((TumorData - model_tumor_data)^2, na.rm=TRUE)
   return(SSE)
 }
 
@@ -80,22 +83,21 @@ sse_func <- function(par) {
 ##############################################################################
 init_par <- c(
   r=0.2,
-  eps=1.5,
+  w=0.3,
   rho=0.141,
   l=0.1,
   k_inf=0.000591,
   delta=1.119,
   gamma=0.1,
-  a=0.9,
-  w=0.3
+  a=0.9
 )
 
 lower_bounds <- c(
-  1e-4,  1, 0, 0, 0, 1, 0, 0, 0
+  0.01,  0, 0.01, 0, 0.00001, 0.01, 0.01, 0
 )
 
 upper_bounds <- c(
-  2,   5,  1, 5,    1,     5,    5,    5,   5
+  1,   1,  1, 1, 1,    2,     1,    10
 )
 
 ##############################################################################

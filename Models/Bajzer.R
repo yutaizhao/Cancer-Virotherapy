@@ -1,5 +1,9 @@
 rm(list=ls())
 
+data.df <- read.csv("../Data/NIS-data.csv", header=TRUE)
+
+TimeData <- data.df$x
+TumorData <- data.df$y
 ###################################################################
 ###################################################################
 ## Projet
@@ -77,9 +81,9 @@ result
 colnames(result) <- c("Time", "y", "x", "v")
 
 head(result)
-
-plot(Time,result[,"y"],type="l",col="green",xlab="Time",ylab="",ylim=c(0,K),bty="n")
-lines(Time,result[,"x"],type="l",col="red")
-lines(Time,result[,"v"],type="l",col="black")
-legend("topright",c("Uninfected","Infected","Virus"),col=c("green","red","black"),lty=1,bty="n")
+plot(TimeData, TumorData, pch=16, col="blue",
+     xlab="Time (days)", ylab="Tumor size (x + y)", bty="n",
+     xlim = c(0, Tmax),ylim=c(0, 2139.258))
+lines(Time,result[,"y"] + result[,"x"],type="l",col="green",xlab="Time",ylab="",ylim=c(0,K),bty="n")
+legend("topright",c("data","tumor"),col=c("blue","green"),lty=1,bty="n")
 

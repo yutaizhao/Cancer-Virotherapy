@@ -81,19 +81,13 @@ MyViro.model <- function(t, pop, param) {
 
 require(deSolve)
 
-Tmax = 50
+Tmax = 45
 dt = 1
 
 y0=TumorData[1]
 x0=0
 s0=0
 v0=0
-
-  
-#Fitted param
-K=  2139.258#Carrying capacity of tumors (in 10 ^6 cells)
-r=  0.2062134 #Effective growth rate of uninfected cells (day-1)
-eps= 1.648773
 
 #Estimated param
 event.dat <- data.frame(var   = c("v"),
@@ -104,9 +98,9 @@ event.dat <- data.frame(var   = c("v"),
 Time=seq(from=TimeData[1],to=Tmax,by=dt)
 
 Init.cond <- c(y = y0, x = x0, v = v0)
-param=c(K,r,1.119, 0.141, 0.000591, 0.9, 0.3 ,eps)
+param=c(2139.258,0.2062134,1.119, 0.141, 0.000591, 0.9, 0.3 ,1.648773)
 Init_mymodel.cond <- c(y = y0, x = x0,  s = s0, v = v0)
-param_mymodel=c(K,r,1.1063849, 0.1721021, 0.1685458, 0.9069786, 0.2423003 ,eps, 0.1199910, 2.7619762)
+param_mymodel=c(2139.258, 0.2465703,0.6790797, 0.0869327, 0.3876686, 4.2512462,  0.1503796, 1.648773, 1.0000000, 0.4578726)
 
 # Execute
 result <- lsoda(Init.cond, Time, Viro.model, param, events = list(data = event.dat))
@@ -119,17 +113,17 @@ colnames(result_mymodel) <- c("Time", "y", "x", "s", "v")
 # Plot all together
 ##############################################################################
 plot(TimeData, TumorData, pch=16, col="blue",
-     xlab="Time (days)", ylab="Tumor size (x + y)", bty="n",
-     xlim = c(0, Tmax),ylim=c(0, K))
+     xlab="Time (days)", ylab="Tumor size (mm^3)", bty="n",
+     xlim = c(0, Tmax),ylim=c(0, 2139.258))
 
 # Model 1 (green)
 lines(result[,"Time"], result[,"y"] + result[,"x"], col="green", lwd=2)
 
 # Model 2 (red)
-lines(result_mymodel[,"Time"], result_mymodel[,"y"] + result_mymodel[,"x"], col="red", lwd=2, lty=2)
+lines(result_mymodel[,"Time"], result_mymodel[,"y"] + result_mymodel[,"x"] + result_mymodel[,"s"], col="red", lwd=2, lty=2)
 
 # Legend
-legend("topright", legend=c("Experimental data", "Bajzer Model", "MyModel"),
+legend("topleft", legend=c("Experimental data", "Bajzer Model", "MyModel"),
        col=c("blue", "green", "red"),
        pch=c(16, NA, NA), lty=c(NA, 1, 2), lwd=c(NA, 2, 2), bty="n")
 
